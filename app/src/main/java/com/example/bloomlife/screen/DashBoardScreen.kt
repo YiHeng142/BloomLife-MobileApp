@@ -33,38 +33,36 @@ fun DashboardScreen(
     onAddFood: (String) -> Unit,
     onRemoveFood: (String, Int) -> Unit,
     onReset: () -> Unit,
-    onRecommendations: () -> Unit
+    onRecommendations: () -> Unit,
+    canFeedPlant: Boolean,
+    plantStage: Int,
+    plantGrowthPercent: Int,
+    onFeedPlant: () -> Unit
 ) {
-
-    // Calculate total calories
     val totalCalories = meals.sumOf { meal ->
         meal.foods.sumOf { food ->
             food.calories
         }
     }
 
-    // Calculate total protein
     val totalProtein = meals.sumOf { meal ->
         meal.foods.sumOf { food ->
             food.protein
         }
     }
 
-    // Calculate total carbohydrates
     val totalCarbohydrates = meals.sumOf { meal ->
         meal.foods.sumOf { food ->
             food.carbohydrates
         }
     }
 
-    // Calculate total fat
     val totalFat = meals.sumOf { meal ->
         meal.foods.sumOf { food ->
             food.fat
         }
     }
 
-    // Daily targets
     val calorieTarget = 2000
     val proteinTarget = 100.0
     val carbohydrateTarget = 250.0
@@ -77,18 +75,14 @@ fun DashboardScreen(
 
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-
-        // TITLE
+        //Title
         item {
-
             Text(
                 text = "Nutrition Tracker",
                 style = MaterialTheme.typography.headlineMedium
             )
 
-            Spacer(
-                modifier = Modifier.height(4.dp)
-            )
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = "Track your daily food intake",
@@ -96,40 +90,36 @@ fun DashboardScreen(
             )
         }
 
-        // NUTRITION SUMMARY
+        //Nutrition Summary
         item {
 
             Card(
                 modifier = Modifier.fillMaxWidth()
             ) {
-
                 Column(
                     modifier = Modifier.padding(16.dp)
                 ) {
-
                     Text(
                         text = "Today's Nutrition",
                         style = MaterialTheme.typography.titleLarge
                     )
 
-                    Spacer(
-                        modifier = Modifier.height(12.dp)
-                    )
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
                         text = "$totalCalories / $calorieTarget kcal",
                         style = MaterialTheme.typography.headlineSmall
                     )
 
-                    Spacer(
-                        modifier = Modifier.height(8.dp)
-                    )
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     LinearProgressIndicator(
                         progress = {
-                            (totalCalories.toFloat() / calorieTarget)
+                            (totalCalories.toFloat() /
+                                    calorieTarget)
                                 .coerceIn(0f, 1f)
                         },
+
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -161,36 +151,75 @@ fun DashboardScreen(
             }
         }
 
-        // MEALS TITLE
+        //Plant Reward
         item {
+            PlantCard(
+                plantStage = plantStage,
+                plantGrowthPercent = plantGrowthPercent
+            )
+        }
 
+        //Feed Plant Button
+        if (canFeedPlant) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "🎉 Daily Goal Achieved!",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "You've earned a reward. " +
+                                    "Feed your plant to make it grow!"
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Button(
+                            onClick = onFeedPlant,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("🌱 Feed Plant")
+                        }
+                    }
+                }
+            }
+        }
+
+        //Meals Title
+        item {
             Text(
                 text = "Meals",
                 style = MaterialTheme.typography.titleLarge
             )
         }
 
-        // MEAL CARDS
+        //Meal Cards
         items(
             count = meals.size
-        ) { index ->
-
-            val meal = meals[index]
-
+        ) { index -> val meal = meals[index]
             MealCard(
                 meal = meal,
 
                 onAddFood = {
                     onAddFood(meal.name)
                 },
-
-                onRemoveFood = { foodId ->
-                    onRemoveFood(meal.name, foodId)
+                onRemoveFood = { foodId -> onRemoveFood(
+                        meal.name,
+                        foodId
+                    )
                 }
             )
         }
 
-        // RECOMMENDATIONS BUTTON
+        //Recommendations
         item {
 
             Button(
@@ -199,27 +228,23 @@ fun DashboardScreen(
             ) {
 
                 Text(
-                    text = "View Food Recommendations"
+                    text = "💡 Food Recommendations"
                 )
             }
         }
 
-        // RESET BUTTON
+        //Reset
         item {
-
             OutlinedButton(
                 onClick = onReset,
                 modifier = Modifier.fillMaxWidth()
             ) {
-
                 Icon(
                     imageVector = Icons.Default.RestartAlt,
                     contentDescription = "Reset"
                 )
 
-                Spacer(
-                    modifier = Modifier.padding(4.dp)
-                )
+                Spacer(modifier = Modifier.padding(4.dp))
 
                 Text(
                     text = "Reset Today's Meals"
@@ -229,7 +254,66 @@ fun DashboardScreen(
     }
 }
 
+//Plant Card
+@Composable
+fun PlantCard(
+    plantStage: Int,
+    plantGrowthPercent: Int
+) {
+    val plantEmoji = when (plantStage) {
+        1 -> "🌱"
+        2 -> "🌿"
+        else -> "🌳"
+    }
 
+    val plantName = when (plantStage) {
+        1 -> "Seedling"
+        2 -> "Young Plant"
+        else -> "Full Tree"
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "🌱 Your Plant",
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = plantEmoji,
+                style = MaterialTheme.typography.displayMedium
+            )
+
+            Text(
+                text = plantName,
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "$plantGrowthPercent% grown"
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            LinearProgressIndicator(
+                progress = {
+                    plantGrowthPercent / 100f
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+//Nutrition Row
 @Composable
 fun NutritionRow(
     name: String,
@@ -237,35 +321,29 @@ fun NutritionRow(
     target: Double,
     unit: String
 ) {
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
     ) {
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-
             Text(
                 text = name
             )
-
             Text(
                 text = "${"%.1f".format(current)} / " +
                         "${"%.0f".format(target)} $unit"
             )
         }
-
         LinearProgressIndicator(
             progress = {
                 (current / target)
                     .toFloat()
                     .coerceIn(0f, 1f)
             },
-
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 4.dp)
@@ -273,52 +351,41 @@ fun NutritionRow(
     }
 }
 
-
+//Meal Card
 @Composable
 fun MealCard(
     meal: Meal,
     onAddFood: () -> Unit,
     onRemoveFood: (Int) -> Unit
 ) {
-
     val calories = meal.foods.sumOf { food ->
         food.calories
     }
-
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
-
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-
-            // MEAL HEADER
+            //Meal Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
-
                 horizontalArrangement = Arrangement.SpaceBetween,
-
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
                 Column {
-
                     Text(
                         text = meal.name,
                         style = MaterialTheme.typography.titleMedium
                     )
-
                     Text(
                         text = "$calories kcal",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
-
                 IconButton(
                     onClick = onAddFood
                 ) {
-
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add food"
@@ -326,50 +393,35 @@ fun MealCard(
                 }
             }
 
-            // FOOD LIST
+            //Food List
             if (meal.foods.isEmpty()) {
-
                 Text(
                     text = "No food added yet",
                     style = MaterialTheme.typography.bodySmall
                 )
-
             } else {
-
                 meal.foods.forEach { food ->
-
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp),
-
-                        horizontalArrangement =
-                            Arrangement.SpaceBetween,
-
-                        verticalAlignment =
-                            Alignment.CenterVertically
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-
                         Column(
                             modifier = Modifier.weight(1f)
                         ) {
-
                             Text(
                                 text = food.name
                             )
-
                             Text(
                                 text = "${food.calories} kcal • " +
                                         "${food.protein}g protein"
                             )
                         }
-
                         IconButton(
-                            onClick = {
-                                onRemoveFood(food.id)
-                            }
+                            onClick = {onRemoveFood(food.id)}
                         ) {
-
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Delete food"
@@ -381,3 +433,4 @@ fun MealCard(
         }
     }
 }
+
