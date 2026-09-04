@@ -21,12 +21,14 @@ import com.example.bloomlife.viewmodel.DietViewModel
 import com.example.bloomlife.viewmodel.WaterViewModel
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
+import com.example.bloomlife.viewmodel.ProfileViewModel
 
 
 @Composable
 fun HomeScreen(
     waterVm: WaterViewModel,
     dietVm: DietViewModel,
+    profileVm: ProfileViewModel,
     onNavigateToWater: () -> Unit,
     onNavigateToExercise: () -> Unit,
     onNavigateToDiet: () -> Unit
@@ -37,6 +39,7 @@ fun HomeScreen(
     val treeGrowthPercent by waterVm.treeGrowthPercent.collectAsStateWithLifecycle()
     val treeStage by waterVm.treeStage.collectAsStateWithLifecycle()
     val meals by dietVm.meals.collectAsStateWithLifecycle()
+    val profile by profileVm.uiState.collectAsStateWithLifecycle()
 
     val totalLiters = totalMl / 1000f
     val goalLiters = dailyGoalMl / 1000f
@@ -57,8 +60,17 @@ fun HomeScreen(
                 .padding(24.dp)
         ) {
             Column {
-                Text("Home", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.Bold)
-                Text("Welcome, Alex", color = Color.White, fontSize = 20.sp)
+                Text(
+                    "Home",
+                    color = Color.White,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "Welcome, ${profile.username}",
+                    color = Color.White,
+                    fontSize = 20.sp
+                )
             }
         }
 
